@@ -1,19 +1,11 @@
-- name: Setup Node
-uses: actions/setup-node@v4
-with:
-node-version: 20
+name: Deploy
 
+on:
+workflow_dispatch:
 
-- name: Install deps
-run: npm install
-
-
-- name: Build
-run: node scripts/fetch_and_build.js
-
-
-- name: Deploy to GH Pages
-uses: peaceiris/actions-gh-pages@v4
-with:
-github_token: ${{ secrets.GITHUB_TOKEN }}
-publish_dir: ./dist
+jobs:
+test:
+runs-on: ubuntu-latest
+steps:
+- name: Hello
+run: echo "yaml OK"
