@@ -1,0 +1,57 @@
+<!doctype html>
+div.className = 'row';
+div.innerHTML = `<div class="col id">#${index+1}</div><div class="col addr"></div><div class="col amt">${item.amount}</div>`;
+div.querySelector('.addr').appendChild(a);
+return div;
+}
+
+
+(async () => {
+const data = await loadData();
+if (!data) {
+document.getElementById('meta').textContent = '无法加载 data.json，请确认 Actions 已成功运行并发布。';
+return;
+}
+document.getElementById('totalCount').textContent = data.totalCount;
+document.getElementById('itemsCount').textContent = data.itemsCount;
+document.getElementById('btcPrice').textContent = data.binancePriceUSD ? (data.binancePriceUSD + ' USD') : '无法获取';
+document.getElementById('fetchedAt').textContent = data.fetchedAt;
+
+
+document.getElementById('calc').addEventListener('click', () => {
+const thresh = Number(document.getElementById('threshold').value || 0);
+const items = data.items || [];
+const matched = items.filter(it => {
+// unitPrice.satPrice 可为字符串
+const unitSats = Number(it.unitPrice && it.unitPrice.satPrice ? it.unitPrice.satPrice : (it.satPrice || 0));
+return unitSats <= thresh;
+});
+const matchedCount = matched.length;
+const matchedAmount = matched.reduce((s, it) => s + Number(it.amount || 0), 0);
+// BTC total: sum of (totalPrice.price) since totalPrice.price is BTC amount per order
+const matchedBTC = matched.reduce((s, it) => s + Number((it.totalPrice && it.totalPrice.price) || 0), 0);
+const matchedUSD = data.binancePriceUSD ? (matchedBTC * data.binancePriceUSD) : null;
+
+
+document.getElementById('matchedCount').textContent = matchedCount;
+document.getElementById('matchedAmount').textContent = matchedAmount;
+document.getElementById('matchedBTC').textContent = matchedBTC.toFixed(8) + ' BTC';
+document.getElementById('matchedUSD').textContent = matchedUSD ? ('$' + matchedUSD.toFixed(2)) : '—';
+
+
+const rows = document.getElementById('rows');
+rows.innerHTML = '';
+if (matched.length === 0) {
+rows.textContent = '没有符合阈值的挂单。';
+} else {
+matched.forEach((it, i) => rows.appendChild(createRow(it, i)));
+}
+});
+
+
+// 自动触发一次默认计算
+document.getElementById('calc').click();
+})();
+</script>
+</body>
+</html>
